@@ -1,0 +1,8 @@
+A continuación se encuentran las sentencias de creación para la base de datos.
+
+create database biblioDB
+use biblioDB
+
+create table usuarios (usuarioId int auto_increment primary key,nombre varchar(255), password varchar(255),token varchar(255));
+create table bibliotecas(bibliotecaId int auto_increment primary key, nombreFacultad varchar(255), nombreCiudad varchar(255), linkBiblioteca varchar(255),usuarioId int, foreign key (usuarioId) references usuarios(usuarioId));
+create table libros(libroId int auto_increment primary key, tituloLibro varchar(255), autorLibro varchar(255), numPag int, bibliotecaId int, linkLibro varchar(255), foreign key (bibliotecaId) references bibliotecas(bibliotecaId));
