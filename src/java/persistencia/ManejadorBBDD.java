@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import modelo.Biblioteca;
 
 /**
  *
@@ -75,7 +76,7 @@ public class ManejadorBBDD {
     }
 
     public String comprobarUsuario(String usuario, String password) {
-        String respuesta = "";
+        String respuesta = "no valido";
         Connection conn = null;
         Statement st = null;
         ResultSet rS = null;
@@ -96,5 +97,56 @@ public class ManejadorBBDD {
             liberarRecursos(rS, st, conn);
         }
         return respuesta;
+    }
+
+    public void guardarToken(String usuario, String password, String token) {
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+            String usuarioId = getUsuarioId(usuario, password);
+            String query = "UPDATE usuarios SET token = '" + token + "' WHERE usuarioId = " + usuarioId + ";";
+            st = conn.createStatement();
+            st.executeUpdate(query);
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+    }
+
+    public String getUsuarioId(String usuario, String password) {
+        String usuarioId = "";
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+            String query = "SELECT usuarioId FROM usuarios WHERE nombre ='"
+                    + usuario + "' AND password = sha1('" + password + "');";
+            st = conn.createStatement();
+            rS = st.executeQuery(query);
+
+            if (rS.next()) {
+                usuarioId = rS.getString(1);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+        return usuarioId;
+    }
+
+    public Biblioteca crearBiblioteca(Biblioteca biblioteca, Integer usuarioId) {
+        Biblioteca bibliotecaRes = null;
+        Connection conn = null;
+        Statement st;
+        ResultSet
     }
 }
