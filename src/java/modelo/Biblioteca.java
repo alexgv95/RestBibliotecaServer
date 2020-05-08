@@ -53,8 +53,12 @@ public class Biblioteca implements Serializable {
         this.libros = libros;
     }
 
+    public Libro getLibro(int numLibro) {
+        return getLibros().get(numLibro);
+    }
+    
     public String crearLink(int idBiblitoeca) {
-        return "http://localhost:8080/RESTBiblioteca/webresources/biblioteca/";
+        return "http://localhost:8080/RestBibliotecaServer/webresources/biblioteca/";
     }
 
     public String getFacultad() {

@@ -41,7 +41,7 @@ public class Libro implements Serializable {
         this.numPag = numPag;
     }
 
-    public Libro(String titulo, String autor, Integer numPag, Integer idLibro, String linkLibro) {
+    public Libro(Integer idLibro, String titulo, String autor, Integer numPag, String linkLibro) {
         this.titulo = titulo;
         this.autor = autor;
         this.numPag = numPag;
@@ -50,7 +50,7 @@ public class Libro implements Serializable {
     }
 
     public String crearLink(int idLibro, int idBiblioteca) {
-        return "http://localhost:8080/RESTBiblioteca/webresources/biblioteca/libro/" + idLibro;
+        return "http://localhost:8080/RestBibliotecaServer/webresources/biblioteca/libro/" + idLibro;
     }
 
     public String getTitulo() {
