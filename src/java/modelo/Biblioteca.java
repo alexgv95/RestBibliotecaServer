@@ -31,7 +31,7 @@ public class Biblioteca implements Serializable {
     @XmlElementWrapper(name = "Libros")
     private List<Libro> libros = new ArrayList();
     @XmlElement()
-    private String linkBiblitoeca;
+    private String linkBiblioteca;
     @XmlElement()
     private Integer idBiblioteca;
 
@@ -45,10 +45,10 @@ public class Biblioteca implements Serializable {
         this.libros = libros;
     }
 
-    public Biblioteca(String facultad, String ciudad, String linkBiblitoeca, Integer idBiblioteca, List<Libro> libros) {
+    public Biblioteca(String facultad, String ciudad, String linkBiblioteca, Integer idBiblioteca, List<Libro> libros) {
         this.facultad = facultad;
         this.ciudad = ciudad;
-        this.linkBiblitoeca = linkBiblitoeca;
+        this.linkBiblioteca = linkBiblioteca;
         this.idBiblioteca = idBiblioteca;
         this.libros = libros;
     }
@@ -56,8 +56,8 @@ public class Biblioteca implements Serializable {
     public Libro getLibro(int numLibro) {
         return getLibros().get(numLibro);
     }
-    
-    public String crearLink(int idBiblitoeca) {
+
+    public String crearLink(int idBiblioteca) {
         return "http://localhost:8080/RestBibliotecaServer/webresources/biblioteca/";
     }
 
@@ -85,12 +85,12 @@ public class Biblioteca implements Serializable {
         this.libros = libros;
     }
 
-    public String getLinkBiblitoeca() {
-        return linkBiblitoeca;
+    public String getLinkBiblioteca() {
+        return linkBiblioteca;
     }
 
-    public void setLinkBiblitoeca(String linkBiblitoeca) {
-        this.linkBiblitoeca = linkBiblitoeca;
+    public void setLinkBiblioteca(String linkBiblioteca) {
+        this.linkBiblioteca = linkBiblioteca;
     }
 
     public Integer getIdBiblioteca() {

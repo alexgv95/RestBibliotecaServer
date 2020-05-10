@@ -160,26 +160,28 @@ public class ManejadorBBDD {
 
             String query = "SELECT * FROM bibliotecas WHERE usuarioId = '" + usuarioId + "';";
             rS = st.executeQuery(query);
+            System.out.println(rS.toString());
             if (rS.next()) {
                 Integer bibliotecaId = rS.getInt(1);
                 query = "UPDATE bibliotecas SET nombreFacultad = '" + biblioteca.getFacultad()
-                        + "' WHERE usuarioId = '" + usuarioId + ";";
+                        + "', nombreCiudad = '" + biblioteca.getCiudad() + "' "
+                        + "WHERE usuarioId = " + usuarioId + ";";
                 st.executeUpdate(query);
                 borrarLibros(bibliotecaId);
                 bibliotecaRes = obtenerBiblioteca(bibliotecaId);
                 return bibliotecaRes;
             } else {
-                query = "INSERT INTO bibliotecas (nombreFacultad, nombreCiudad, usuarioId VALUES"
+                query = "INSERT INTO bibliotecas (nombreFacultad, nombreCiudad, usuarioId) VALUES"
                         + "('" + biblioteca.getFacultad() + "', '" + biblioteca.getCiudad() + "', "
                         + usuarioId + ");";
                 st.executeUpdate(query);
                 anadirLinkBiblioteca(biblioteca);
             }
-            query = "SELECT bibliotecaId FROM bibliotecas WHERE nombreFacultad  = '" + 
-                    biblioteca.getFacultad() + "';";
+            query = "SELECT bibliotecaId FROM bibliotecas WHERE nombreFacultad  = '"
+                    + biblioteca.getFacultad() + "';";
             rS = st.executeQuery(query);
             int bibliotecaId = 0;
-            if (rS.next()){
+            if (rS.next()) {
                 bibliotecaId = rS.getInt(1);
             }
             Libro libro = null;
@@ -187,14 +189,18 @@ public class ManejadorBBDD {
                 libro = biblioteca.getLibro(i);
                 crearLibro(libro, bibliotecaId);
             }
-            
+
+            bibliotecaRes = obtenerBiblioteca(bibliotecaId);
         } catch (NamingException | SQLException ex) {
             Logger.getLogger(ManejadorBBDD.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            liberarRecursos(rS, st, conn);
         }
+        return bibliotecaRes;
     }
 
     public void borrarLibros(Integer idBiblioteca) {
-        Biblioteca biblitoeca = null;
+        Biblioteca Biblioteca = null;
         Connection conn = null;
         Statement st = null;
         ResultSet rS = null;
@@ -212,7 +218,7 @@ public class ManejadorBBDD {
         }
     }
 
-    public Biblioteca obtenerBiblioteca(int biblitoecaId) {
+    public Biblioteca obtenerBiblioteca(int BibliotecaId) {
         Biblioteca biblioteca = null;
         Connection conn = null;
         Statement st = null;
@@ -221,7 +227,7 @@ public class ManejadorBBDD {
             InitialContext initialContext = new InitialContext();
             DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
             conn = dataSource.getConnection();
-            String query = "SELECT * FROM biblitoecas where biblitoecaId =" + biblitoecaId + ";";
+            String query = "SELECT * FROM Bibliotecas where BibliotecaId =" + BibliotecaId + ";";
             st = conn.createStatement();
             rS = st.executeQuery(query);
 
@@ -233,9 +239,9 @@ public class ManejadorBBDD {
                 idBiblioteca = rS.getInt(1);
                 nombreFacultad = rS.getString(2);
                 nombreCiudad = rS.getString(3);
-                linkBiblioteca = rS.getNString(4);
+                linkBiblioteca = rS.getString(4);
             }
-            biblioteca = new Biblioteca(nombreFacultad, nombreCiudad, linkBiblioteca, idBiblioteca, obtenerLibros(biblitoecaId));
+            biblioteca = new Biblioteca(nombreFacultad, nombreCiudad, linkBiblioteca, idBiblioteca, obtenerLibros(BibliotecaId));
         } catch (Exception e) {
             System.out.println(e);
         } finally {
@@ -295,5 +301,141 @@ public class ManejadorBBDD {
         } finally {
             liberarRecursos(rS, st, conn);
         }
+    }
+
+    public Libro crearLibro(Libro libro, int bibliotecaId) {
+//        Libro libro2 = null;
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+            String query = "INSERT into libros (tituloLibro,autorLibro,numPag,bibliotecaId) "
+                    + "VALUES('" + libro.getTitulo() + "'," + libro.getAutor() + ","
+                    + libro.getNumPag() + "," + bibliotecaId + ");";
+            st = conn.createStatement();
+            st.executeUpdate(query);
+
+            anadirLinkLibro(libro);
+            query = "SELECT libroId from libros WHERE tituloLibro ='" + libro.getTitulo() + "';";
+            rS = st.executeQuery(query);
+            int libroId = 0;
+            if (rS.next()) {
+                libroId = rS.getInt(1);
+            }
+
+            libro = obtenerLibro(bibliotecaId, libroId);
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+        return libro;
+    }
+
+    private void anadirLinkLibro(Libro libro) {
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+
+            String query = "SELECT libroId, bibliotecaId FROM libros WHERE "
+                    + "tituloLibro ='" + libro.getTitulo() + "';";
+            st = conn.createStatement();
+            rS = st.executeQuery(query);
+            int libroId = 0;
+            int bibliotecaId = 0;
+            if (rS.next()) {
+                libroId = rS.getInt(1);
+                bibliotecaId = rS.getInt(2);
+            }
+
+            query = "UPDATE libros set linkLibro = '" + libro.crearLink(libroId,
+                    bibliotecaId) + "' WHERE libroId = " + libroId + ";";
+            st.executeUpdate(query);
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+    }
+
+    public Libro obtenerLibro(int bibliotecaId, int libroId) {
+        Libro libro = null;
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+            String query = "SELECT * FROM libros where bibliotecaId ="
+                    + bibliotecaId + " and libroId = " + libroId + ";";
+            st = conn.createStatement();
+            rS = st.executeQuery(query);
+            if (rS.next()) {
+                libro = new Libro(rS.getInt(1),
+                        rS.getString(2), rS.getString(3), rS.getInt(4),
+                        rS.getString(6));
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+        return libro;
+    }
+
+    public Integer getBibliotecaId(Integer usuarioId) {
+        Integer bibliotecaId = 0;
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+            String query = "SELECT bibliotecaId FROM bibliotecas where usuarioId =" + usuarioId + ";";
+            st = conn.createStatement();
+            rS = st.executeQuery(query);
+            if (rS.next()) {
+                bibliotecaId = rS.getInt(1);
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+        return bibliotecaId;
+    }
+
+    public Integer comprobarToken(String token) {
+        Integer usuarioId = null;
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+            String query = "SELECT usuarioId FROM usuarios WHERE token ='" + token + "';";
+            //System.out.println(query);
+            st = conn.createStatement();
+            rS = st.executeQuery(query);
+            if (rS.next()) {
+                usuarioId = rS.getInt(1);
+            }
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+        return usuarioId;
     }
 }

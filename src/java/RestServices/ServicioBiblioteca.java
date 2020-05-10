@@ -5,7 +5,8 @@
  */
 package RestServices;
 
-import java.security.Principal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
@@ -13,11 +14,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PUT;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import modelo.Biblioteca;
 import persistencia.ManejadorBBDD;
+import java.security.Principal;
 
 /**
  * REST Web Service
@@ -30,7 +31,8 @@ public class ServicioBiblioteca {
     @Context
     private UriInfo context;
     ManejadorBBDD DBHandler = new ManejadorBBDD();
-    SecurityContext sC;
+    SecurityContext securityContext;
+
     /**
      * Creates a new instance of ServicioBiblioteca
      */
@@ -38,31 +40,41 @@ public class ServicioBiblioteca {
     }
 
     /**
-     * Retrieves representation of an instance of RestServices.ServicioBiblioteca
-     * @param biblioteca
-     * @param sC
+     * Retrieves representation of an instance of
+     * RestServices.ServicioBiblioteca
+     *
+     * @param bib
+     * @param securityContext
      * @return an instance of java.lang.String
      */
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @NecesidadToken
-    public Biblioteca postBiblioteca(Biblioteca biblioteca, @Context SecurityContext sC) {
+    public Biblioteca postBiblioteca(Biblioteca bib, @Context SecurityContext securityContext) {
         Biblioteca bibliotecaRes = null;
-        Principal principal = sC.getUserPrincipal();
-        Integer usuarioId = Integer.parseInt(principal.getName());
+        Principal user = securityContext.getUserPrincipal();
+        System.out.println(user);
+        Integer usuarioId = Integer.parseInt(user.getName());
         try {
-            bibliotecaRes = DBHandler.crearBiblioteca(biblioteca, usuarioId);
+            bibliotecaRes = DBHandler.crearBiblioteca(bib, usuarioId);
         } catch (Exception ex) {
+            Logger.getLogger(ServicioBiblioteca.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println(ex);
         }
         return bibliotecaRes;
     }
-    /**
-     * PUT method for updating or creating an instance of ServicioBiblioteca
-     * @param content representation for the resource
-     */
-    @PUT
-    @Consumes(MediaType.APPLICATION_XML)
-    public void putXml(String content) {
+
+    @GET
+    @NecesidadToken
+    @Produces(MediaType.APPLICATION_XML)
+    public Biblioteca getBiblioteca(@Context SecurityContext securityContext) {
+        Integer numBiblioteca = getBibliotecaIdPorUsuarioId(securityContext);
+        return DBHandler.obtenerBiblioteca(numBiblioteca);
+    }
+
+    public Integer getBibliotecaIdPorUsuarioId(SecurityContext securityContext) {
+        Principal principal = securityContext.getUserPrincipal();
+        Integer usuarioId = Integer.parseInt(principal.getName());
+        return DBHandler.getBibliotecaId(usuarioId);
     }
 }
