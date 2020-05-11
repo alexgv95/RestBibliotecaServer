@@ -38,10 +38,17 @@ public class ListaLibros {
         this.libros = libros;
     }
 
-    //ECHAR UN VISTAZO AL TOSTRING DE LISTA LIBROS
     @Override
     public String toString() {
-        return "ListaLibros{" + "libros=" + libros + '}';
+        String respuesta = "";
+        for (int i = 0; i < libros.size(); i++) {
+            respuesta += ("\n Libro [" + libros.get(i).getIdLibro() + "]:    "
+                    + "\n\tTitulo: " + libros.get(i).getTitulo() + "    "
+                    + "\n\tAutor : " + libros.get(i).getAutor() + "    "
+                    + "\n\tNºPags: " + libros.get(i).getNumPag());
+
+        };
+        return respuesta;
     }
 
 }

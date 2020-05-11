@@ -116,7 +116,7 @@ public class Biblioteca implements Serializable {
     @Override
     public String toString() {
         String respuesta = "";
-        respuesta += ("Nombre de la biblioteca: " + facultad);
+        respuesta += ("Facultad: " + facultad + "\nCiudad: " + ciudad);
         for (int i = 0; i < libros.size(); i++) {
             respuesta += ("\n Libro " + i + ": " + libros.get(i).toString());
         };
