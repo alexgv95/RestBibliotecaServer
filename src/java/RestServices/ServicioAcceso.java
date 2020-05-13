@@ -11,6 +11,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import modelo.Usuario;
@@ -35,25 +36,7 @@ public class ServicioAcceso {
     public ServicioAcceso() {
     }
 
-    /**
-     * Retrieves representation of an instance of RestServices.ServicioAcceso
-     *
-     * @return an instance of java.lang.String
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_XML)
-    public String getXml() {
-        //TODO return proper representation object
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * PUT method for updating or creating an instance of ServicioAcceso
-     *
-     * @param usuario
-     * @return
-     */
-    @POST
+    @PUT
     @Consumes(MediaType.APPLICATION_XML)
     public String acceder(Usuario usuario) {
         String respuesta = "";

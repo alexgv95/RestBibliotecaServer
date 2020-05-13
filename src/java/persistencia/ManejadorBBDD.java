@@ -488,4 +488,22 @@ public class ManejadorBBDD {
         }
         return libroNuevo;
     }
+
+    public void borrarToken(Integer usuarioId) {
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rS = null;
+        try {
+            InitialContext initialContext = new InitialContext();
+            DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
+            conn = dataSource.getConnection();
+            String query = "UPDATE usuarios SET token =null WHERE usuarioId = '" + usuarioId + "';";
+            st = conn.createStatement();
+            st.executeUpdate(query);
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            liberarRecursos(rS, st, conn);
+        }
+    }
 }

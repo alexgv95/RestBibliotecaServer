@@ -5,6 +5,13 @@
  */
 package RestServices;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Context;
@@ -23,8 +30,10 @@ import java.util.List;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import modelo.Libro;
 import modelo.ListaLibros;
+import modelo.Marshaller;
 
 /**
  * REST Web Service
@@ -54,7 +63,8 @@ public class ServicioBiblioteca {
      * @return an instance of java.lang.String
      */
     @POST
-    @Consumes(MediaType.APPLICATION_XML)
+//    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
     @NecesidadToken
     public Biblioteca postBiblioteca(Biblioteca bib, @Context SecurityContext securityContext) {
         Biblioteca bibliotecaRes = null;
@@ -171,5 +181,91 @@ public class ServicioBiblioteca {
             respuesta = ex.toString();
         }
         return respuesta;
+    }
+
+    @GET
+    @Path("/export")
+    @NecesidadToken
+    @Produces(MediaType.TEXT_PLAIN)
+    public String exportarBiblioteca(@QueryParam("nombreFichero") String nombreFichero, @Context SecurityContext securityContext) {
+        Integer idBiblioteca = getBibliotecaIdPorUsuarioId(securityContext);
+        Biblioteca biblioteca = DBHandler.obtenerBiblioteca(idBiblioteca);
+        Marshaller ms = new Marshaller();
+        ms.marshallerBiblioteca(biblioteca, nombreFichero);
+        File file = new File("./" + nombreFichero + ".xml");
+        return codificadorString(file);
+    }
+
+    @GET
+    @Path("/import")
+    @NecesidadToken
+    public Biblioteca importarBiblioteca(@QueryParam("nombreFichero") String nombreFichero, @QueryParam("contenidoFichero") String contenidoFichero, @Context SecurityContext securityContext) {
+        Biblioteca bibliotecaRes = null;
+        Integer bibliotecaId = null;
+        Principal user = securityContext.getUserPrincipal();
+        Integer usuarioId = Integer.parseInt(user.getName());
+
+        File file = descifrarString(contenidoFichero, nombreFichero);
+        Marshaller ms = new Marshaller();
+        Biblioteca bibliotecaXML = ms.unmarshallerBiblioteca(file);
+        List<Libro> librosXML = bibliotecaXML.getLibros();
+        System.out.println(librosXML);
+        try {
+            bibliotecaRes = DBHandler.crearBiblioteca(bibliotecaXML, usuarioId);
+            bibliotecaId = bibliotecaRes.getIdBiblioteca();
+        } catch (Exception ex) {
+            Logger.getLogger(ServicioBiblioteca.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
+        }
+        Libro libro = null;
+        for (int i = 0; i < bibliotecaXML.contarLibros(); i++) {
+            libro = bibliotecaXML.getLibro(i);
+            DBHandler.crearLibro(libro, bibliotecaId);
+        }
+        return bibliotecaRes;
+    }
+
+    private String codificadorString(File file) {
+        String contenidoFichero = "";
+        String STOP = "#";
+        try {
+            BufferedReader reader;
+            reader = new BufferedReader(new FileReader(file));
+            String line = reader.readLine();
+
+            while (line != null) {
+                contenidoFichero = contenidoFichero + line + STOP;
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("Excepcion: " + ex);
+            //Logger.getLogger(ServicioAduanas.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            System.out.println("Excepcion: " + ex);
+            //Logger.getLogger(ServicioAduanas.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return contenidoFichero;
+    }
+
+    private File descifrarString(String respuesta, String nombreFichero) {
+        String newRespuesta = respuesta.replaceAll("#", "\n");
+        System.out.println(newRespuesta);
+        BufferedWriter bw = null;
+        File fichero = null;
+        try {
+            fichero = new File("./" + nombreFichero + ".xml");
+            bw = new BufferedWriter(new FileWriter(fichero));
+            bw.write(newRespuesta);
+        } catch (IOException ex) {
+            System.out.println("Excepcion: " + ex);
+        } finally {
+            try {
+                bw.close();
+            } catch (IOException ex) {
+                System.out.println("Excepcion: " + ex);
+            }
+        }
+        return fichero;
     }
 }

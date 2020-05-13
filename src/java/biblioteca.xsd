@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:element name="Biblioteca">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="facultad" type="xs:string"></xs:element>
+                <xs:element name="ciudad" type="xs:string"></xs:element>
+                <xs:element name="ListaLibros">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Libro" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="titulo" type="xs:string"></xs:element>
+                                        <xs:element name="autor" type="xs:string"></xs:element>
+                                        <xs:element name="numPag" type="xs:int"></xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
