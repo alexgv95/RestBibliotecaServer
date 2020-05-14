@@ -60,12 +60,12 @@ public class Marshaller {
         return libro;
     }
 
-    public void marshallerLibro(Libro libro) {
+    public void marshallerLibro(Libro libro, String nombreFichero) {
         try {
             JAXBContext jContext = JAXBContext.newInstance(Libro.class);
             javax.xml.bind.Marshaller marshallObj = jContext.createMarshaller();
             marshallObj.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            OutputStream os = new FileOutputStream("./" + libro.getTitulo() + ".xml");
+            OutputStream os = new FileOutputStream("./" + nombreFichero + ".xml");
             marshallObj.marshal(libro, os);
             System.out.println("Libro exportada con exito\n\n");
         } catch (IOException | JAXBException ex) {

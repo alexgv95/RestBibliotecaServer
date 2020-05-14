@@ -184,6 +184,33 @@ public class ServicioBiblioteca {
     }
 
     @GET
+    @Path("/libro/{numLibro}/export")
+    @NecesidadToken
+    @Produces(MediaType.TEXT_PLAIN)
+    public String exportarLibro(@QueryParam("nombreFichero") String nombreFichero, @PathParam("numLibro") int numLibro, @Context SecurityContext securityContext) {
+        Integer idBiblioteca = getBibliotecaIdPorUsuarioId(securityContext);
+        Libro libro = DBHandler.obtenerLibro(idBiblioteca, numLibro);
+        Marshaller ms = new Marshaller();
+        ms.marshallerLibro(libro, nombreFichero);
+        File file = new File("./" + nombreFichero + ".xml");
+        return codificadorString(file);
+    }
+
+    @GET
+    @Path("/libro/import")
+    @NecesidadToken
+    public String importarLibro(@QueryParam("nombreFichero") String nombreFichero, @QueryParam("contenidoFichero") String contenidoFichero, @Context SecurityContext securityContext) {
+        Integer bibliotecaId = getBibliotecaIdPorUsuarioId(securityContext);;
+        Biblioteca biblitoeca = DBHandler.obtenerBiblioteca(bibliotecaId);
+        
+        File file = descifrarString(contenidoFichero, nombreFichero);
+        Marshaller ms = new Marshaller();
+        Libro libroImportado = ms.unmarshallerLibro(file);
+        DBHandler.crearLibro(libroImportado, bibliotecaId);
+        return "Se ha importado con exito";
+    }
+
+    @GET
     @Path("/export")
     @NecesidadToken
     @Produces(MediaType.TEXT_PLAIN)
