@@ -25,7 +25,7 @@ import persistencia.ManejadorBBDD;
 @Priority(Priorities.AUTHENTICATION)
 public class FiltroAutentificacion implements ContainerRequestFilter {
 
-    private static final String REALM = "example";
+    private static final String REALM = "biblioteca";
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
     Integer usuarioId = null;
@@ -48,7 +48,7 @@ public class FiltroAutentificacion implements ContainerRequestFilter {
             usuarioId = validateToken(authorizationHeader);
             System.out.println("Token valido");
         } else {
-            System.out.println("no funciona");
+            System.out.println("No funciona");
             abortWithUnauthorized(requestContext);
         }
 

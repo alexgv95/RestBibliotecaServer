@@ -5,6 +5,7 @@
  */
 package persistencia;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -156,8 +157,8 @@ public class ManejadorBBDD {
             InitialContext initialContext = new InitialContext();
             DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
             conn = dataSource.getConnection();
-            st = conn.createStatement();
 
+            st = conn.createStatement();
             String query = "SELECT * FROM bibliotecas WHERE usuarioId = '" + usuarioId + "';";
             rS = st.executeQuery(query);
             System.out.println(rS.toString());
@@ -184,12 +185,6 @@ public class ManejadorBBDD {
             if (rS.next()) {
                 bibliotecaId = rS.getInt(1);
             }
-
-//            Libro libro = null;
-//            for (int i = 0; i < biblioteca.contarLibros(); i++) {
-//                libro = biblioteca.getLibro(i);
-//                crearLibro(libro, bibliotecaId);
-//            }
             bibliotecaRes = obtenerBiblioteca(bibliotecaId);
         } catch (NamingException | SQLException ex) {
             Logger.getLogger(ManejadorBBDD.class.getName()).log(Level.SEVERE, null, ex);
@@ -200,7 +195,6 @@ public class ManejadorBBDD {
     }
 
     public void borrarLibros(Integer idBiblioteca) {
-        Biblioteca Biblioteca = null;
         Connection conn = null;
         Statement st = null;
         ResultSet rS = null;
@@ -211,7 +205,7 @@ public class ManejadorBBDD {
             st = conn.createStatement();
             String query = "DELETE FROM libros WHERE bibliotecaId = " + idBiblioteca + ";";
             st.executeUpdate(query);
-        } catch (Exception e) {
+        } catch (SQLException | NamingException e) {
             System.out.println(e);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -244,7 +238,7 @@ public class ManejadorBBDD {
             }
             biblioteca = new Biblioteca(nombreFacultad, nombreCiudad,
                     linkBiblioteca, idBiblioteca, obtenerLibros(bibliotecaId));
-        } catch (Exception e) {
+        } catch (SQLException | NamingException e) {
             System.out.println(e);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -264,13 +258,12 @@ public class ManejadorBBDD {
             String query = "SELECT * FROM libros where bibliotecaId ='" + bibliotecaId + "';";
             st = conn.createStatement();
             rS = st.executeQuery(query);
-
             while (rS.next()) {
                 Libro libro = new Libro(rS.getInt(1), rS.getString(2), rS.getString(3), rS.getInt(4), rS.getString(6));
                 listaLibros.add(libro);
                 System.out.println(libro.toString());
             }
-        } catch (Exception e) {
+        } catch (SQLException | NamingException e) {
             System.out.println(e);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -294,11 +287,10 @@ public class ManejadorBBDD {
             if (rS.next()) {
                 bibliotecaId = rS.getInt(1);
             }
-
             query = "UPDATE bibliotecas set linkBiblioteca = '" + biblioteca.crearLink(bibliotecaId) + "' WHERE bibliotecaId = " + bibliotecaId + ";";
             st = conn.createStatement();
             st.executeUpdate(query);
-        } catch (Exception ex) {
+        } catch (SQLException | NamingException ex) {
 
         } finally {
             liberarRecursos(rS, st, conn);
@@ -319,17 +311,16 @@ public class ManejadorBBDD {
                     + libro.getNumPag() + "," + bibliotecaId + ");";
             st = conn.createStatement();
             st.executeUpdate(query);
-
-            anadirLinkLibro(libro);
-            query = "SELECT libroId from libros WHERE tituloLibro ='" + libro.getTitulo() + "';";
+            query = "SELECT libroId FROM libros WHERE tituloLibro ='" + libro.getTitulo() + "';";
             rS = st.executeQuery(query);
             int libroId = 0;
-            if (rS.next()) {
+            if (rS.last()) {
                 libroId = rS.getInt(1);
+                System.out.println("LIBRO ID: " + libroId);
             }
-
+            anadirLinkLibro(libro, bibliotecaId, libroId);
             libroN = obtenerLibro(bibliotecaId, libroId);
-        } catch (Exception ex) {
+        } catch (SQLException | NamingException ex) {
             System.out.println(ex);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -337,7 +328,7 @@ public class ManejadorBBDD {
         return libroN;
     }
 
-    private void anadirLinkLibro(Libro libro) {
+    private void anadirLinkLibro(Libro libro, Integer bibliotecaId, Integer libroId) {
         Connection conn = null;
         Statement st = null;
         ResultSet rS = null;
@@ -345,22 +336,11 @@ public class ManejadorBBDD {
             InitialContext initialContext = new InitialContext();
             DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
             conn = dataSource.getConnection();
-
-            String query = "SELECT libroId, bibliotecaId FROM libros WHERE "
-                    + "tituloLibro ='" + libro.getTitulo() + "';";
             st = conn.createStatement();
-            rS = st.executeQuery(query);
-            int libroId = 0;
-            int bibliotecaId = 0;
-            if (rS.next()) {
-                libroId = rS.getInt(1);
-                bibliotecaId = rS.getInt(2);
-            }
-
-            query = "UPDATE libros set linkLibro = '" + libro.crearLink(libroId,
+            String query = "UPDATE libros set linkLibro = '" + libro.crearLink(libroId,
                     bibliotecaId) + "' WHERE libroId = " + libroId + ";";
             st.executeUpdate(query);
-        } catch (Exception ex) {
+        } catch (SQLException | NamingException ex) {
             System.out.println("Error: " + ex);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -385,7 +365,7 @@ public class ManejadorBBDD {
                         rS.getString(2), rS.getString(3), rS.getInt(4),
                         rS.getString(6));
             }
-        } catch (Exception e) {
+        } catch (SQLException | NamingException e) {
             System.out.println(e);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -409,7 +389,7 @@ public class ManejadorBBDD {
                 bibliotecaId = rS.getInt(1);
             }
 
-        } catch (Exception e) {
+        } catch (SQLException | NamingException e) {
             System.out.println(e);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -427,13 +407,12 @@ public class ManejadorBBDD {
             DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
             conn = dataSource.getConnection();
             String query = "SELECT usuarioId FROM usuarios WHERE token ='" + token + "';";
-            //System.out.println(query);
             st = conn.createStatement();
             rS = st.executeQuery(query);
             if (rS.next()) {
                 usuarioId = rS.getInt(1);
             }
-        } catch (Exception ex) {
+        } catch (SQLException | NamingException ex) {
             System.out.println(ex);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -455,7 +434,7 @@ public class ManejadorBBDD {
             st = conn.createStatement();
             st.executeUpdate(query);
             biblioteca = obtenerBiblioteca(bibliotecaId);
-        } catch (Exception e) {
+        } catch (SQLException | NamingException e) {
             System.out.println(e);
         } finally {
             liberarRecursos(rS, st, conn);
@@ -479,10 +458,10 @@ public class ManejadorBBDD {
             st = conn.createStatement();
             st.executeUpdate(query);
 
-            anadirLinkLibro(libro);
+            anadirLinkLibro(libro, bibliotecaId, libroId);
             libroNuevo = obtenerLibro(bibliotecaId, libroId);
-        } catch (Exception ex) {
-
+        } catch (SQLException | NamingException ex) {
+            System.out.println(ex);
         } finally {
             liberarRecursos(rS, st, conn);
         }
@@ -500,7 +479,7 @@ public class ManejadorBBDD {
             String query = "UPDATE usuarios SET token =null WHERE usuarioId = '" + usuarioId + "';";
             st = conn.createStatement();
             st.executeUpdate(query);
-        } catch (Exception ex) {
+        } catch (SQLException | NamingException ex) {
             System.out.println(ex);
         } finally {
             liberarRecursos(rS, st, conn);
