@@ -49,7 +49,7 @@ public class Libro implements Serializable {
         this.linkLibro = linkLibro;
     }
 
-    public String crearLink(int idLibro, int idBiblioteca) {
+    public String crearLink(int idLibro) {
         return "http://localhost:8080/RestBibliotecaServer/webresources/biblioteca/libro/" + idLibro;
     }
 

@@ -261,7 +261,6 @@ public class ManejadorBBDD {
             while (rS.next()) {
                 Libro libro = new Libro(rS.getInt(1), rS.getString(2), rS.getString(3), rS.getInt(4), rS.getString(6));
                 listaLibros.add(libro);
-                System.out.println(libro.toString());
             }
         } catch (SQLException | NamingException e) {
             System.out.println(e);
@@ -318,7 +317,7 @@ public class ManejadorBBDD {
                 libroId = rS.getInt(1);
                 System.out.println("LIBRO ID: " + libroId);
             }
-            anadirLinkLibro(libro, bibliotecaId, libroId);
+            anadirLinkLibro(libro, libroId);
             libroN = obtenerLibro(bibliotecaId, libroId);
         } catch (SQLException | NamingException ex) {
             System.out.println(ex);
@@ -328,7 +327,7 @@ public class ManejadorBBDD {
         return libroN;
     }
 
-    private void anadirLinkLibro(Libro libro, Integer bibliotecaId, Integer libroId) {
+    private void anadirLinkLibro(Libro libro,Integer libroId) {
         Connection conn = null;
         Statement st = null;
         ResultSet rS = null;
@@ -337,8 +336,8 @@ public class ManejadorBBDD {
             DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
             conn = dataSource.getConnection();
             st = conn.createStatement();
-            String query = "UPDATE libros set linkLibro = '" + libro.crearLink(libroId,
-                    bibliotecaId) + "' WHERE libroId = " + libroId + ";";
+            String query = "UPDATE libros set linkLibro = '" + libro.crearLink(libroId) 
+                    + "' WHERE libroId = " + libroId + ";";
             st.executeUpdate(query);
         } catch (SQLException | NamingException ex) {
             System.out.println("Error: " + ex);
@@ -430,7 +429,7 @@ public class ManejadorBBDD {
             DataSource dataSource = (DataSource) initialContext.lookup("jdbc/biblioDatasource");
             conn = dataSource.getConnection();
             String query = "DELETE FROM libros WHERE bibliotecaId =" + bibliotecaId
-                    + " and libroId = " + libroId + ";";
+                    + " AND libroId = " + libroId + ";";
             st = conn.createStatement();
             st.executeUpdate(query);
             biblioteca = obtenerBiblioteca(bibliotecaId);
@@ -458,7 +457,7 @@ public class ManejadorBBDD {
             st = conn.createStatement();
             st.executeUpdate(query);
 
-            anadirLinkLibro(libro, bibliotecaId, libroId);
+            anadirLinkLibro(libro, libroId);
             libroNuevo = obtenerLibro(bibliotecaId, libroId);
         } catch (SQLException | NamingException ex) {
             System.out.println(ex);

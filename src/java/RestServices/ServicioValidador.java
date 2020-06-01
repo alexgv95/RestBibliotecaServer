@@ -55,7 +55,7 @@ public class ServicioValidador {
 //            ClassLoader classLoader = getClass().getClassLoader();
 //            File xsdFile = new File(classLoader.getResource("biblioteca.xsd").getFile());
             cargarXSD();
-            File xsdFile = new File("./TEST/biblioteca.xsd");
+            File xsdFile = new File(".   /biblioteca.xsd");
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             Schema schema = schemaFactory.newSchema(xsdFile);
             Validator validator = schema.newValidator();

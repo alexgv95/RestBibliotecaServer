@@ -200,9 +200,7 @@ public class ServicioBiblioteca {
     @Path("/libro/import")
     @NecesidadToken
     public String importarLibro(@QueryParam("nombreFichero") String nombreFichero, @QueryParam("contenidoFichero") String contenidoFichero, @Context SecurityContext securityContext) {
-        Integer bibliotecaId = getBibliotecaIdPorUsuarioId(securityContext);;
-        Biblioteca biblitoeca = DBHandler.obtenerBiblioteca(bibliotecaId);
-        
+        Integer bibliotecaId = getBibliotecaIdPorUsuarioId(securityContext);        
         File file = descifrarString(contenidoFichero, nombreFichero);
         Marshaller ms = new Marshaller();
         Libro libroImportado = ms.unmarshallerLibro(file);
@@ -235,8 +233,6 @@ public class ServicioBiblioteca {
         File file = descifrarString(contenidoFichero, nombreFichero);
         Marshaller ms = new Marshaller();
         Biblioteca bibliotecaXML = ms.unmarshallerBiblioteca(file);
-        List<Libro> librosXML = bibliotecaXML.getLibros();
-        System.out.println(librosXML);
         try {
             bibliotecaRes = DBHandler.crearBiblioteca(bibliotecaXML, usuarioId);
             bibliotecaId = bibliotecaRes.getIdBiblioteca();
@@ -267,10 +263,8 @@ public class ServicioBiblioteca {
             reader.close();
         } catch (FileNotFoundException ex) {
             System.out.println("Excepcion: " + ex);
-            //Logger.getLogger(ServicioAduanas.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             System.out.println("Excepcion: " + ex);
-            //Logger.getLogger(ServicioAduanas.class.getName()).log(Level.SEVERE, null, ex);
         }
         return contenidoFichero;
     }
